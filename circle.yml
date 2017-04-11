@@ -1,0 +1,37 @@
+machine:
+  pre:
+    # actualiza docker para que docker-compose funcione correctamente
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+
+  timezone: America/Bogota
+
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker info
+    - pip install --upgrade docker-compose
+
+
+test:
+  override:
+    - docker-compose -f dev.yml run backend python apps/test.py
+
+
+
+deployment:
+  hub:
+    branch: develop
+    commands:
+      - git pull origin develop
+      - docker-compose -f dev.yml up -d --build
+
+
+
+
+# deployment:
+#   hub:
+#     branch: master
+#     commands:
+#       - bash -c "$DEPLOY"
