@@ -1,0 +1,17 @@
+version: '2'
+service:
+  backend:
+    build:
+      context: ./flask
+      container_name: flask_restaurant
+      ports:
+        - "5001:5001"
+      volumes: 
+        - ./flask/app:/home/desarrollo
+      command: python apps/app.py
+
+  db:
+    image: postgres
+    env_file: .env
+
+      
