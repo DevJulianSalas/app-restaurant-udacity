@@ -1,8 +1,15 @@
 machine:
+  #pre: corre antes de inferir algun comando
+  #override: corre en lugar de inferir los comandos
+  #post: corre despues de inferrir los comandos
+
+  #configurar aca las variables de entorno, ya que por cada seccion y comando se genera una nueva shell export foo=bar no trabaja en cada pieza
   pre:
     # actualiza docker para que docker-compose funcione correctamente
     - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
-
+  python:
+    version: 3.6
+  
   timezone: America/Bogota
 
   services:
