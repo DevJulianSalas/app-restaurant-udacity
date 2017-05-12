@@ -11,7 +11,7 @@ services:
     command: /bin/bash -c "
               sleep 5;  
               python app.py"
-    depends_on: 
+    links: 
       - db
 
   db:
