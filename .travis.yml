@@ -9,7 +9,7 @@ install:
   - docker-compose -f dev.yml up -d
 
 before_script:
-  - pip install -r requirements.txt
+  - pip install -r flask/requirements.txt
   - pip install mock
 
 
