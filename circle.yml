@@ -8,7 +8,7 @@ machine:
     # actualiza docker para que docker-compose funcione correctamente
     - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
   python:
-    version: 3.6
+    version: 3.6.6
   
   timezone: America/Bogota
 
