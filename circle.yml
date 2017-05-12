@@ -23,16 +23,16 @@ dependencies:
 
 test:
   override:
-    - docker-compose -f dev.yml run backend python apps/test.py
+    - docker-compose -f dev.yml run --no-deps backend python test.py
 
 
 
-deployment:
-  hub:
-    branch: develop
-    commands:
-      - git pull origin develop
-      - docker-compose -f dev.yml up -d --build
+# deployment:
+#   hub:
+#     branch: develop
+#     commands:
+#       - git pull origin develop
+#       - docker-compose -f dev.yml up -d --build
 
 
 
