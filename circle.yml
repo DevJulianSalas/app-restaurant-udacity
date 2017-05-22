@@ -23,18 +23,9 @@ test:
 
 
 
-# deployment:
-#   hub:
-#     branch: develop
-#     commands:
-#       - git pull origin develop
-#       - docker-compose -f dev.yml up -d --build
 
-
-
-
-# deployment:
-#   hub:
-#     branch: master
-#     commands:
-#       - bash -c "$DEPLOY"
+deployment:
+  hub:
+    branch: master
+    commands:
+      - bash -c "$DEPLOY"

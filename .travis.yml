@@ -6,7 +6,7 @@ services:
   - docker
 install:
   - docker-compose -f dev.yml build  # se construye nuevamente la imagen con tu nuevo feature
-  - docker-compose -f dev.yml run --no-deps backend python test.pys
+  - docker-compose -f dev.yml run --no-deps backend python test.py
 
 before_script:
   - pip install mock
