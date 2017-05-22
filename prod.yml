@@ -6,7 +6,7 @@ services:
     ports:
       - "9000:9000"
     volumes: 
-      - home/desarrollo
+      - /flask/app:/home/desarrollo
     command: /bin/bash -c "
               sleep 5;  
               python app.py"
