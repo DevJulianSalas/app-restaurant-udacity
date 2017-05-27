@@ -14,6 +14,9 @@ RUN mkdir /tmp/requirements
 COPY requirements.txt /tmp/requirements
 RUN pip install -r /tmp/requirements/requirements.txt
 
+ADD /app /$HOME_DIR
+
+
 
 #set up user not root
 RUN useradd -ms $SHELL $USER
