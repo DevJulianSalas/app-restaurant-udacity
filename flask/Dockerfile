@@ -14,7 +14,7 @@ RUN mkdir /tmp/requirements
 COPY requirements.txt /tmp/requirements
 RUN pip install -r /tmp/requirements/requirements.txt
 
-ADD /app /$HOME_DIR
+ADD ./app /$HOME_DIR
 
 
 
