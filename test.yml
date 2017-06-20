@@ -1,0 +1,40 @@
+version: "2.0"
+services:
+  backend_testing:
+    build:
+      context: ./project_flask
+    container_name: "flask_restaurant_testing"
+    env_file: .env
+    volumes: 
+      - ./project_flask/flasky:/home/desarrollo
+      - /tmp/testing:/db 
+    command: /bin/bash -c "
+              sleep 5;  
+              python3 -u -m app.test"
+    links: 
+      - db_testing
+    networks:
+      app_net:
+        ipv4_address: '$FLASK_IP_TEST'
+
+  db_testing:
+    image: testing
+    container_name: "db_restaurant_testing_1"
+    env_file: .env
+    networks:
+      app_net:
+        ipv4_address: '$SQLLITE_TEST_IP'
+    volumes:
+      - /tmp/testing:/db
+
+    
+
+    
+  
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.5.0/24

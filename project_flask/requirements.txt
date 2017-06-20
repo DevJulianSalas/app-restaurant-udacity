@@ -4,3 +4,7 @@ SQLAlchemy==1.1
 flask-restful==0.3.5
 Flask-Script
 Flask-Migrate
+marshmallow --pre
+flask-marshmallow
+marshmallow-sqlalchemy
+requests

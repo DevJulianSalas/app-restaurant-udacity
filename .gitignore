@@ -1,3 +1,6 @@
 *.bash_history
 *.env
 *__pycache__
+*.txt
+.python_history
+*.pyc
