@@ -1,4 +1,4 @@
-version: "2"
+version: '2'
 services:
   backend_testing:
     build:
@@ -14,8 +14,6 @@ services:
       app_net:
         ipv4_address: '$FLASK_IP_TEST'
 
-  
-  
 networks:
   app_net:
     driver: bridge
