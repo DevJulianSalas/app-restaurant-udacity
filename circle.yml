@@ -10,7 +10,7 @@ machine:
     - pip install --upgrade pip
     - pip install docker-compose
   python:
-     version: 3.5.2
+     version: 2.7.11
   
   timezone: America/Bogota
 
