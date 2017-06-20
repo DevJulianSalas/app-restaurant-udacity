@@ -35,7 +35,7 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     Testing = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get("TESTING_DATABASE_URI") or "None"
+    SQLALCHEMY_DATABASE_URI = os.environ.get("None") or "None"
 
 
 config = {
