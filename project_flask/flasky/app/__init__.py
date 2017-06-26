@@ -31,8 +31,10 @@ def create_app(config_environment):
     ma.init_app(app)
     from .user import user_blueprint 
     from .requests import request_blueprint
+    from .proposal import proposal_to_request
     app.register_blueprint(user_blueprint)
     app.register_blueprint(request_blueprint)
+    app.register_blueprint(proposal_to_request)
     return app
 
 

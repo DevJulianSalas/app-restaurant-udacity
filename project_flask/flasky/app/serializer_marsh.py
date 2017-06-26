@@ -21,7 +21,7 @@ class UserSchema(ma.Schema):
     # class Meta:
     #     fields = "__all__"
 class RequestsSchema(Schema):
-    
+
     id = fields.Int(dump_only=True)
     meal_type = fields.Str(
         required=True, 
@@ -32,14 +32,36 @@ class RequestsSchema(Schema):
     latitud = fields.Str(required=True, validate=must_not_be_blank)
     meal_time = fields.DateTime(required=True, validate=must_not_be_blank)
     filled = fields.Int(required=True, validate=must_not_be_blank)
-    user = fields.Nested(
-        UserSchema, 
-        error_messages = {"required": "id user is required to register request"},
+    user_id = fields.Int(
+        required=True,
+        error_messages = {"required": "id user is required to request object"},
+        validate=must_not_be_blank)
+
+class ProposalSchema(Schema):
+    id = fields.Int(dump_only=True)
+    request_id = fields.Int(
+        required=True,
+        error_messages = {"required": "id request is required to register proposal"},
         validate=must_not_be_blank
     )
+    user_proposed_to = fields.Int(
+        required=True,
+        error_messages = {"required": "id user is required to register proposal"},
+        validate=must_not_be_blank
+    )
+    user_proposed_from = fields.Int(
+        required=True,
+        error_messages = {"required": "id user is required to reggister proposal"},
+        validate=must_not_be_blank
+    )
+
+
     
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+
 request_schema = RequestsSchema()
 requests_schema = RequestsSchema(many=True)
 
+proposal_schema = ProposalSchema()
+proposals_schema = ProposalSchema(many=True)

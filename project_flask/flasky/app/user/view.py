@@ -26,8 +26,10 @@ class ApiUserResource(Resource):
         if errors:
             return make_response(jsonify({'message': errors}), 422)
         user = User(
-            name=data["name"], email=data["email"],
-            password_hash=data["password_hash"], age=data["age"]
+            name=data.get("name",None), 
+            email=data.get("email",None),
+            password_hash=data.get("password_hash",None), 
+            age=data.get("age",None)
         )
         user.save()
         result = user_schema.dump(User.query.get(user.id))

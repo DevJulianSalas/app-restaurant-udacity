@@ -1,7 +1,7 @@
 import unittest, json
 from . import db, create_app
 import os
-from app.models import User, Request
+from app.models import User, Request, Proposal
 from sqlalchemy import func
 from datetime import datetime
 import requests
@@ -54,10 +54,11 @@ class TestApplication(unittest.TestCase):
             self.user_registry = self.test_user.query.get(self.test_user.id)
             self.request_user = Request(
                 meal_type="Dinner",
-                filled=10,
-                latitud="4.523232",
                 location_request="Denver",
+                latitud="4.523232",
                 meal_time=datetime.now(),
+                filled=10,
+                filled_limit = True,
                 user = self.user_registry
             )
             db.session.add(self.request_user)
@@ -65,25 +66,63 @@ class TestApplication(unittest.TestCase):
             insert_registry = len(self.request_user.query.all())
             self.assertEqual(insert_registry, 1)
 
-    def test_create_user(self):
+    def test_create_proposal_data_base(self):
         with self.app.app_context():
-            query = {
-	            "name":"Julian", 
-	            "email":"Juliansalas080@gmail.com",
-	            "password_hash":"1qwfsdafas",
-	            "age":27
-            }
-            result = self.app_client.post(
-                "api/v1/create/user", data=json.dumps(query),
-                content_type='application/json'
+            self.test_user = User(
+                name="Julian", 
+                email="Juliansalas080@gmail.com",
+                password_hash="1qwfsdafas",
+                age=27
             )
-            data = json.loads(result.data.decode('utf-8'))
-            self.assertEqual(result.status_code, 200)
-            self.assertEqual(data, {
-                "User": "Julian",
-                "id": 1,
-                "message": "Created User"
-            })
+            db.session.add(self.test_user)
+            db.session.commit()
+            self.user_registry = self.test_user.query.get(self.test_user.id)
+            self.request_user = Request(
+                meal_type="Dinner",
+                location_request="Denver",
+                latitud="4.523232",
+                meal_time=datetime.now(),
+                filled=10,
+                filled_limit = True,
+                user = self.user_registry
+            )
+            db.session.add(self.request_user)
+            db.session.commit()
+            self.proposal = Proposal(
+                user_proposed_to=self.user_registry.id,
+                request_id=self.request_user.id,
+                user_proposed_from= self.request_user.user_id
+            )
+            db.session.add(self.proposal)
+            db.session.commit()
+            insert_registry = len(self.proposal.query.all())
+            self.assertEqual(insert_registry, 1)
+
+
+
+
+    
+    
+    
+    # def test_create_user(self):
+    #     with self.app.app_context():
+    #         query = {
+	#             "name":"Julian", 
+	#             "email":"Juliansalas080@gmail.com",
+	#             "password_hash":"1qwfsdafas",
+	#             "age":27
+    #         }
+    #         result = self.app_client.post(
+    #             "api/v1/create/user", data=json.dumps(query),
+    #             content_type='application/json'
+    #         )
+    #         data = json.loads(result.data.decode('utf-8'))
+    #         self.assertEqual(result.status_code, 200)
+    #         self.assertEqual(data, {
+    #             "User": "Julian",
+    #             "id": 1,
+    #             "message": "Created User"
+    #         })
         
             
         
