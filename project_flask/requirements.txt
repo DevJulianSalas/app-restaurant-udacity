@@ -8,3 +8,8 @@ marshmallow --pre
 flask-marshmallow
 marshmallow-sqlalchemy
 requests
+pyjwt==1.4.2
+flask-login==0.4.0
+requests_oauthlib
+flask-bcrypt==0.7.1
+Flask-JWT

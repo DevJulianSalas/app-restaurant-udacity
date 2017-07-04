@@ -1,8 +1,16 @@
-### Register blueprints  #####
+
+# --*-- Installed packages --*--
 from flask import Flask, current_app
 from flask_sqlalchemy import SQLAlchemy
-from config import config
 from flask_marshmallow import Marshmallow
+from flask_bcrypt import Bcrypt
+from flask_jwt import JWT
+
+# --*-- Own packages --*--
+from config import config
+
+
+
 
 
 """
@@ -18,23 +26,36 @@ application running in the same aplicaciont process...
 
 db = SQLAlchemy()
 ma = Marshmallow()
+bcrypt =  Bcrypt()
+
 
 def create_app(config_environment):
     app = Flask(__name__)
     app.config.from_object(config[config_environment])
     config[config_environment].init_app(app)
+    #Register plugins to app init
     db.init_app(app)
+    ma.init_app(app)
+    bcrypt.init_app(app)
+    
     with app.app_context():
         db.create_all()
-        
+    
+    #register jwt
+    from .auth.view import authenticate, identity
+
+    jwt = JWT(app, authenticate, identity)
+
+
+    
     #Here register blueprints
-    ma.init_app(app)
     from .user import user_blueprint 
     from .requests import request_blueprint
     from .proposal import proposal_to_request
     app.register_blueprint(user_blueprint)
     app.register_blueprint(request_blueprint)
     app.register_blueprint(proposal_to_request)
+    # app.register_blueprint(auth_blueprint)
     return app
 
 

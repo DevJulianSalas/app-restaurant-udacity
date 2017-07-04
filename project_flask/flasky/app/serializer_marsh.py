@@ -1,7 +1,17 @@
 from marshmallow import Schema, fields, ValidationError, pre_load, post_load
 from .helper import must_not_be_blank
 from .models import User, Request
-from . import ma
+from . import ma, bcrypt
+import os
+
+
+
+class ValidateTokenSchema(ma.Schema):
+    pass
+
+
+
+
 
 class UserSchema(ma.Schema):
     # class Meta:
@@ -17,9 +27,28 @@ class UserSchema(ma.Schema):
     def format_name(self, user):
         return "{}, {}".format(user.name, user.email)
     
+    @pre_load
+    def generate_bycrip_pass(self, data):
+        data["password_hash"] = bcrypt.generate_password_hash(
+            data["password_hash"], 
+            int(os.environ.get('BCRYPT_LOG_ROUNDS'))
+        ).decode()
+        return data
 
-    # class Meta:
-    #     fields = "__all__"
+
+class UserResultSchema(ma.Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True, validate=must_not_be_blank)
+    email = fields.Email(required=True, validate=must_not_be_blank)
+    age = fields.Int(required=True, validate=must_not_be_blank)
+
+
+
+
+
+
+
+
 class RequestsSchema(Schema):
 
     id = fields.Int(dump_only=True)
@@ -56,10 +85,12 @@ class ProposalSchema(Schema):
     )
 
 
-    
-user_schema = UserSchema()
-users_schema = UserSchema(many=True)
 
+#User    
+user_schema = UserSchema()
+user_result_schema = UserResultSchema(only=('name', 'email'),many=True)
+
+#Request
 request_schema = RequestsSchema()
 requests_schema = RequestsSchema(many=True)
 

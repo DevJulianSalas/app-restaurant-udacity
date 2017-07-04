@@ -6,6 +6,27 @@ from sqlalchemy import func
 from datetime import datetime
 import requests
 from .helper import API_INDEX
+from flask import current_app
+
+
+
+class TestDevelopmentConfig(unittest.TestCase):
+    
+    def setUp(self):
+        self.app = create_app(os.getenv('FLASK_CONFIG', default=None))
+        self.app_client = self.app.test_client()
+
+    
+    def test_app_is_developmnet(self):
+        self.assertTrue(self.app.config["DEBUG"] is True)
+        self.assertFalse(current_app is None)
+        self.assertTrue(
+            self.app.config["SQLALCHEMY_DATABASE_URI"] == 'postgresql://julian_develop:qwerty123@db:5432/desarrollo'
+        )
+
+
+
+
 
 
 

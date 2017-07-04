@@ -1,7 +1,7 @@
 version: "2.0"
 services:
   backend:
-    image: devjulian/app-restaurant-udacity:latest
+    image: devjulian/app-restaurant-udacity:develop
     container_name: "flask_restaurant"
     ports:
       - "9000:9000"

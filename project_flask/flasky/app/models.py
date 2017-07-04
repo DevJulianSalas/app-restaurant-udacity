@@ -1,7 +1,8 @@
+
 from . import db
 from flask_sqlalchemy import declarative_base
-
-
+import os
+from datetime import datetime, timedelta
 
 
 Base = declarative_base()
@@ -11,9 +12,15 @@ class BaseModel(Base):
     __abstract__  = True
     id = db.Column(db.Integer, primary_key=True)
     
+
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+    
+    
+
+
 
 
 class User(db.Model, BaseModel):
@@ -21,8 +28,45 @@ class User(db.Model, BaseModel):
     name = db.Column(db.String(120))
     email = db.Column(db.String(120))
     password_hash = db.Column(db.String(120))
+    active = db.Column(db.Boolean, default=False)
     age = db.Column(db.Integer)
+    token = db.Column(db.Text)
 
+
+    def encode_auth_token(self, user_id):
+        """
+        generate auth token
+        """
+        try:
+            payload = {
+                'exp': datetime.now() + timedelta(days=0, seconds=59),
+                'iat': datetime.now(),
+                'sub': user_id
+                }
+            return jwt.encode(payload, os.environ.get('SECRET_KEY'), 
+                algorithm='HS256'
+            )
+        except Exception as e:
+            raise e
+
+    @staticmethod
+    def decode_auth_token(auth_token):
+        """
+        decode auth token
+        :return str or int
+        """
+        try:
+            payload = jwt.decode(auth_token, os.environ.get('SECRET_KEY'))
+            return payload
+        except jwt.ExpiredSignatureError:
+            return 'Signature expired. Please log in again.'
+        except jwt.InvalidTokenError:
+            return 'Invalid token. Please log in again.'
+        
+        
+        
+    
+    
     #Relathionship
     user = db.relationship('Request', backref="user", lazy='dynamic')
             
