@@ -118,32 +118,26 @@ class TestApplication(unittest.TestCase):
             db.session.commit()
             insert_registry = len(self.proposal.query.all())
             self.assertEqual(insert_registry, 1)
-
-
-
-
     
-    
-    
-    # def test_create_user(self):
-    #     with self.app.app_context():
-    #         query = {
-	#             "name":"Julian", 
-	#             "email":"Juliansalas080@gmail.com",
-	#             "password_hash":"1qwfsdafas",
-	#             "age":27
-    #         }
-    #         result = self.app_client.post(
-    #             "api/v1/create/user", data=json.dumps(query),
-    #             content_type='application/json'
-    #         )
-    #         data = json.loads(result.data.decode('utf-8'))
-    #         self.assertEqual(result.status_code, 200)
-    #         self.assertEqual(data, {
-    #             "User": "Julian",
-    #             "id": 1,
-    #             "message": "Created User"
-    #         })
+    def test_create_user(self):
+        with self.app.app_context():
+            query = {
+	            "name":"Julian", 
+	            "email":"Juliansalas080@gmail.com",
+	            "password_hash":"1qwfsdafas",
+	            "age":27
+            }
+            result = self.app_client.post(
+                "api/v1/create/user", data=json.dumps(query),
+                content_type='application/json'
+            )
+            data = json.loads(result.data.decode('utf-8'))
+            self.assertEqual(result.status_code, 200)
+            self.assertEqual(data, {
+                "User": "Julian",
+                "id": 1,
+                "message": "Created User"
+            })
         
             
         

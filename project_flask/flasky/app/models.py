@@ -62,6 +62,32 @@ class User(db.Model, BaseModel):
             return 'Signature expired. Please log in again.'
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
+    
+    @staticmethod
+    def verify_if_user_exist(user_name):
+        """
+        return true if user exist
+        params: user_name str username
+        return Bool
+        """
+        result_query_user = User.query.filter_by(name=user_name).first()
+        if result_query_user:
+            return True
+    
+    @staticmethod
+    def update_instance_of_user(id, data):
+        """
+        return instance of user updated if there is one user.
+        params: data => something value to search in columns to return data
+        """
+        try:
+            user_update = User.query.filter_by(id=id).update(data)
+        except Exception as e:
+            print(e)
+            return False
+        if user_update:
+            db.session.commit()
+            return user_update
         
         
         

@@ -6,7 +6,7 @@ from flask import request, jsonify, redirect
 from flask_jwt import JWT
 # --*-- own packages --*--
 from . import auth_blueprint
-# from ..serializer_marsh import user_schema
+# from ..serializer_marsh import user_result_schema
 from ..models import User
 from .. import bcrypt
 

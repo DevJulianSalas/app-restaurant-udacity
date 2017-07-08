@@ -44,6 +44,14 @@ class UserResultSchema(ma.Schema):
 
 
 
+class UpdateUserSchema(ma.Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(validate=must_not_be_blank)
+    email = fields.Email(validate=must_not_be_blank)
+    password_hash = fields.Str(validate=must_not_be_blank)
+    age = fields.Int(validate=must_not_be_blank)
+    
+
 
 
 
@@ -87,12 +95,15 @@ class ProposalSchema(Schema):
 
 
 #User    
-user_schema = UserSchema()
-user_result_schema = UserResultSchema(only=('name', 'email'),many=True)
+user_result_schema = UserSchema(only=('name', 'email'))
+users_result_schema = UserResultSchema(only=('name', 'email'),many=True)
+update_user_result_schema = UpdateUserSchema()
+
 
 #Request
 request_schema = RequestsSchema()
 requests_schema = RequestsSchema(many=True)
 
+#proposal
 proposal_schema = ProposalSchema()
 proposals_schema = ProposalSchema(many=True)

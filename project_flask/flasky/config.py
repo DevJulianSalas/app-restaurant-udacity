@@ -5,6 +5,9 @@
 from flask_sqlalchemy import SQLAlchemy
 import os
 
+# --*-- built-in packages --*--
+from datetime import timedelta
+
 
 
 
@@ -21,6 +24,7 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = False
     TESTING = False
+    JWT_EXPIRATION_DELTA = timedelta(days=30)
     @staticmethod
     def init_app(app):
         pass
