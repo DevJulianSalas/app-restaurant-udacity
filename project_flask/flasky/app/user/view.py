@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 
 # --*-- installed packages --*--
 from . import user_blueprint
@@ -105,9 +105,8 @@ class ApiUserResource(Resource):
         json_data = request.args.to_dict()
         if not json_data:
             return make_response(jsonify({'message': 'No input data provided'}), 400)
-        try:
-            user = User.query.get(json_data.get("id",None))
-        except Exception as e:
+        user = User.query.get(json_data.get("id",None))
+        if user is None:
             response = {
                 "message": "Opps User could not be found"
             }

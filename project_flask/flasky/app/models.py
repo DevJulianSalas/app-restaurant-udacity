@@ -113,6 +113,48 @@ class Request(db.Model, BaseModel):
     #Relathionship
     proposal = db.relationship('Proposal', backref="proposal", lazy='dynamic')
     
+
+
+    @staticmethod
+    def get_all_data(user_id):
+        """Return all request from Request except the requests of own user_id"""
+        try:
+            list_request = list()
+            for data in Request.query.filter(Request.user_id != user_id):
+                list_request.append(data)
+            return list_request
+        except Exception as error:
+            print(error)
+            db.session.rollback()
+
+    @staticmethod
+    def get_specifyc_request(id_request):
+        try:
+            result_request = Request.query.get(id_request)
+            return result_request
+        except Exception as error:
+            print(error)
+            db.session.rollback()
+
+    @staticmethod
+    def update_request(user_id, data_update):
+        try:
+            request_update = Request.query.filter(\
+                Request.user_id == user_id, 
+                Request.id == data_update.get("id", None)
+                ).update(data_update)
+        except Exception as e:
+            print(e)
+            return False
+        if request_update:
+            db.session.commit()
+            return request_update
+        else:
+            return False
+        
+        
+        
+        
     
     
     

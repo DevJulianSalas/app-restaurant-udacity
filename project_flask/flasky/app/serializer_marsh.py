@@ -74,6 +74,22 @@ class RequestsSchema(Schema):
         error_messages = {"required": "id user is required to request object"},
         validate=must_not_be_blank)
 
+
+class RequestUpdateSchema(Schema):
+    id = fields.Int(required=True, error_messages= {
+        "required": "Id is necesary to update request"
+        }
+    )
+    meal_type = fields.Str(validate = must_not_be_blank)
+    location_request = fields.Str(validate=must_not_be_blank)
+    meal_time = fields.DateTime(validate=must_not_be_blank)
+    filled = fields.Int(validate=must_not_be_blank)
+    user_id = fields.Int(validate=must_not_be_blank)
+
+
+
+
+
 class ProposalSchema(Schema):
     id = fields.Int(dump_only=True)
     request_id = fields.Int(
@@ -103,6 +119,7 @@ update_user_result_schema = UpdateUserSchema()
 #Request
 request_schema = RequestsSchema()
 requests_schema = RequestsSchema(many=True)
+request_update_schema = RequestUpdateSchema()
 
 #proposal
 proposal_schema = ProposalSchema()
