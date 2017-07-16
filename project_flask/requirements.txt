@@ -13,3 +13,4 @@ flask-login==0.4.0
 requests_oauthlib
 flask-bcrypt==0.7.1
 Flask-JWT
+pytest==3.13

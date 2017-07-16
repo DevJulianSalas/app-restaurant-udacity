@@ -104,7 +104,7 @@ class ApiUserResource(Resource):
     def get(self):
         json_data = request.args.to_dict()
         if not json_data:
-            return make_response(jsonify({'message': 'No input data provided'}), 400)
+            return make_response(jsonify({'message': 'No params id data provided'}), 400)
         user = User.query.get(json_data.get("id",None))
         if user is None:
             response = {

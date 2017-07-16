@@ -139,37 +139,71 @@ class Request(db.Model, BaseModel):
     @staticmethod
     def update_request(user_id, data_update):
         try:
-            request_update = Request.query.filter(\
+            request_update = Request.query.filter(
                 Request.user_id == user_id, 
                 Request.id == data_update.get("id", None)
                 ).update(data_update)
         except Exception as e:
-            print(e)
             return False
         if request_update:
             db.session.commit()
             return request_update
         else:
             return False
-        
-        
-        
-        
-    
-    
-    
-    
-    
 
-        
 class Proposal(db.Model, BaseModel):
     __tablename__ = 'proposal'
     
     #ForeignKey
     request_id = db.Column(db.Integer, db.ForeignKey("request.id"))
     #fields
-    user_proposed_to = db.Column(db.Integer)
+    user_proposed_to = db.Column(db.Integer) 
     user_proposed_from = db.Column(db.Integer)
+
+    @staticmethod
+    def get_proposals_by_user_id(user_id):
+        try:
+            proposals =\
+                Proposal.query.filter(Proposal.user_proposed_to==\
+                    user_id.get("id", None)
+            )
+        except Exception as e:
+            return None
+        return proposals
+
+    @staticmethod
+    def get_specific_proposal(id_proposal, info_user):
+        try:
+            proposal = Proposal.query.filter(
+                Proposal.id == id_proposal,
+                Proposal.user_proposed_from == info.get("id", None) or\
+                Proposal.user_proposed_to == info_user.get("id")
+            )
+        except Exception as e:
+            raise e
+        return proposal
+
+    @staticmethod
+    def update_proposal(current_id_data, data_update):
+        try:
+            exist_user_proposal = Proposal.query.filter(
+                Proposal.user_proposed_from == current_id_data.id
+            )
+        except Exception as e:
+            raise e
+        if exist_user_proposal is None:
+            return False
+        try:
+            update_proposal = Proposal.query.filter_by(
+                data_update.get('id', None)
+            ).update(data_update)
+        except Exception as e:
+            raise e
+        if update_proposal:
+            db.session.commit()
+            return update_proposal
+
+        
     
     
 class MealDate(db.Model, BaseModel):

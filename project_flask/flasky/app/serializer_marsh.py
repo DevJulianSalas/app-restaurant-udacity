@@ -109,6 +109,24 @@ class ProposalSchema(Schema):
     )
 
 
+class UpdateProposalSchema(Schema):
+    id = fields.Int(required=True, error_messages= {
+        "required": "Id is necesary to update request"
+        }
+    )
+    user_proposed_to = fields.Int(
+        error_messages = {"required": "id user is required to register proposal"},
+        validate=must_not_be_blank
+    )
+    user_proposed_from = fields.Int(
+        error_messages = {"required": "id user is required to reggister proposal"},
+        validate=must_not_be_blank
+    )
+
+
+
+
+
 
 #User    
 user_result_schema = UserSchema(only=('name', 'email'))
@@ -124,3 +142,4 @@ request_update_schema = RequestUpdateSchema()
 #proposal
 proposal_schema = ProposalSchema()
 proposals_schema = ProposalSchema(many=True)
+proposal_update_schema = UpdateProposalSchema()
