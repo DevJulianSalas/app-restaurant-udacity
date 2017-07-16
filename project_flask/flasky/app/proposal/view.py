@@ -12,25 +12,24 @@ from ..helper import API_INDEX
 from ..serializer_marsh import (
     proposal_schema, proposals_schema, proposal_update_schema
 )
-from ..models import Proposal, Request
+from ..models import Proposal, Request, User
 from .. import db
 
 
 api = Api(proposal_to_request)
 
-@proposal_to_request.route("/proporsal")
-def proporsal():
-    return "Proporsal"
+
 
 
 class ApiProposalsResource(Resource):
 
-    @jwt_required
+    @jwt_required()
     def get(self):
-        proposal = Proposal.get_proposal_by_id(
+        proposal = Proposal.get_proposals_by_id(
             current_identity
         )
-        data, error = proposals_schema.dump(proporsal)
+        
+        data, error = proposals_schema.dump(proposal)
         if error:
             response = {
                 "Error": "There was a problem try again"
@@ -38,27 +37,39 @@ class ApiProposalsResource(Resource):
             make_response(jsonify(response), 500)
         return make_response(jsonify(data))
 
-    @jwt_required
+    @jwt_required()
     def post(self):
         json_data = request.get_json()
         if not json_data:
             return make_response(jsonify({'message': 'No input data provided'}), 400)
+        print(json_data)
         data, errors = proposal_schema.load(json_data)
         if errors:
             return make_response(jsonify({'message': errors}), 422)
-        user_id_request = Request.query.get(data.get("request_id", None))
-        if user_id_request is None:
-            return make_response(
-                jsonify({'message': 'There was a problem with request_id',}), 400)
-        if user_id_request.user_id == data.get("user_proposed_to",None):
+        check_proposal_exist = Proposal.check_if_proposal_user_exist(data)
+        if check_proposal_exist:
             response = {
-                "info": "User request is the same of proposal not allowed"
+                "message" : "You should not make a proposal with same id",
+                "id": data.get("request_id")
+            }
+            return make_response(jsonify(response))
+        
+        user_make_request = Request.query.get(
+            data.get("request_id", None)
+        )
+        user_propo_to_request = User.query.get(
+            data.get("user_proposed_from", None)
+        )
+        user_exist = User.query.get(user_make_request.user_id)
+        if user_exist is None or user_propo_to_request is None:
+            response = {
+                "message": "Error not exist, checkout if users exist"
             }
             return make_response(jsonify(response))
         proposal = Proposal(
-            request_id=user_id_request.id,
-            user_proposed_to=data.get("user_proposed_to",None),
-            user_proposed_from=user_id_request.user_id
+            request_id=user_make_request.id,
+            user_proposed_to=user_make_request.user_id,
+            user_proposed_from=data.get("user_proposed_from",None)
         )
         proposal.save()
         result, error = proposal_schema.dump(Proposal.query.get(proposal.id))
@@ -71,7 +82,7 @@ class ApiProposalsResource(Resource):
             )
         )
     
-    @jwt_required
+    @jwt_required()
     def put(self):
         json_data = request.get_json()
         if not json_data:
@@ -79,7 +90,7 @@ class ApiProposalsResource(Resource):
         data, errors = proposal_update_schema.load(json_data)
         if errors:
             return make_response(jsonify({'message': errors}), 422)
-        proposal = Proposal.update_proposal(current_identity.id, data)
+        proposal = Proposal.update_proposal(current_identity, data)
         if not proposal:
             return make_response(jsonify({'message': 'There was a problem, try again'}), 500)
         response = {
@@ -92,7 +103,7 @@ class ApiProposalsResource(Resource):
     
 
 class ApiProposalResource(Resource):
-    @jwt_required
+    @jwt_required()
     def get(self):
         json_data = request.args.to_dict()
         if not json_data:
@@ -119,4 +130,5 @@ class ApiProposalResource(Resource):
 
 
 
-api.add_resource(ApiProposalsResource, API_INDEX + "create/proposal")
+api.add_resource(ApiProposalsResource, API_INDEX + "proposal")
+api.add_resource(ApiProposalResource, API_INDEX + "proposal/<int>:id")

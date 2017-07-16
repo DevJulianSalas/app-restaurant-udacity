@@ -52,9 +52,11 @@ def create_app(config_environment):
     from .user import user_blueprint 
     from .requests import request_blueprint
     from .proposal import proposal_to_request
+    from .mealdate import meal_date_blueprint
     app.register_blueprint(user_blueprint)
     app.register_blueprint(request_blueprint)
     app.register_blueprint(proposal_to_request)
+    app.register_blueprint(meal_date_blueprint)
     # app.register_blueprint(auth_blueprint)
     return app
 

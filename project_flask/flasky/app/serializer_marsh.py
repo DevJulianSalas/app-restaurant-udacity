@@ -1,4 +1,8 @@
-from marshmallow import Schema, fields, ValidationError, pre_load, post_load
+from marshmallow import (
+    Schema, fields, ValidationError, pre_load, post_load,
+    validates
+
+    )
 from .helper import must_not_be_blank
 from .models import User, Request
 from . import ma, bcrypt
@@ -29,11 +33,15 @@ class UserSchema(ma.Schema):
     
     @pre_load
     def generate_bycrip_pass(self, data):
-        data["password_hash"] = bcrypt.generate_password_hash(
-            data["password_hash"], 
-            int(os.environ.get('BCRYPT_LOG_ROUNDS'))
-        ).decode()
-        return data
+        if data.get("password_hash"):
+            data["password_hash"] = bcrypt.generate_password_hash(
+                data.get("password_hash"), 
+                int(os.environ.get('BCRYPT_LOG_ROUNDS'))
+            ).decode('utf-8')
+            return data
+        else:
+            return data
+            
 
 
 class UserResultSchema(ma.Schema):
@@ -50,6 +58,17 @@ class UpdateUserSchema(ma.Schema):
     email = fields.Email(validate=must_not_be_blank)
     password_hash = fields.Str(validate=must_not_be_blank)
     age = fields.Int(validate=must_not_be_blank)
+
+    @pre_load
+    def generate_bycrip_pass(self, data):
+        if data.get("password_hash"):
+            data["password_hash"] = bcrypt.generate_password_hash(
+                data.get("password_hash"), 
+                int(os.environ.get('BCRYPT_LOG_ROUNDS'))
+            ).decode('utf-8')
+            return data
+        else:
+            return data
     
 
 
@@ -108,6 +127,15 @@ class ProposalSchema(Schema):
         validate=must_not_be_blank
     )
 
+    @pre_load
+    def valitade_ids_users_same(self, data):
+        if data.get("user_proposed_to") == data.get("user_proposed_from"):
+            raise ValidationError("user_from should not same to user_to")
+            return data
+        return data
+        
+        
+
 
 class UpdateProposalSchema(Schema):
     id = fields.Int(required=True, error_messages= {
@@ -123,13 +151,29 @@ class UpdateProposalSchema(Schema):
         validate=must_not_be_blank
     )
 
+class MealDateSchema(Schema):
+    is_accept = fields.Boolean(
+        required = True, error_messages={
+            "required": "Accept field is required"
+        }
+    )
+    id_request = fields.Int(
+        required = True,
+        error_messages = {"required": "id request is required to acept mealdate"},
+        validate=must_not_be_blank
+    )
+
+    
+    
+
 
 
 
 
 
 #User    
-user_result_schema = UserSchema(only=('name', 'email'))
+user_result_schema = UserSchema()
+get_only_user_schema = UserSchema(only=("name", "email"))
 users_result_schema = UserResultSchema(only=('name', 'email'),many=True)
 update_user_result_schema = UpdateUserSchema()
 
@@ -143,3 +187,8 @@ request_update_schema = RequestUpdateSchema()
 proposal_schema = ProposalSchema()
 proposals_schema = ProposalSchema(many=True)
 proposal_update_schema = UpdateProposalSchema()
+
+
+
+#mealdate
+meal_date_schema = MealDateSchema()

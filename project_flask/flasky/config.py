@@ -25,6 +25,7 @@ class Config():
     DEBUG = False
     TESTING = False
     JWT_EXPIRATION_DELTA = timedelta(days=30)
+    
     @staticmethod
     def init_app(app):
         pass

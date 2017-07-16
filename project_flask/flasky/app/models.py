@@ -32,6 +32,9 @@ class User(db.Model, BaseModel):
     age = db.Column(db.Integer)
     token = db.Column(db.Text)
 
+    #Relathionship
+    user = db.relationship('Request', backref="user", lazy='dynamic')
+
 
     def encode_auth_token(self, user_id):
         """
@@ -89,14 +92,6 @@ class User(db.Model, BaseModel):
             db.session.commit()
             return user_update
         
-        
-        
-    
-    
-    #Relathionship
-    user = db.relationship('Request', backref="user", lazy='dynamic')
-            
-
 class Request(db.Model, BaseModel):
     __tablename__ = 'request'
     #Foreingkey
@@ -157,16 +152,30 @@ class Proposal(db.Model, BaseModel):
     #ForeignKey
     request_id = db.Column(db.Integer, db.ForeignKey("request.id"))
     #fields
-    user_proposed_to = db.Column(db.Integer) 
-    user_proposed_from = db.Column(db.Integer)
+    user_proposed_to = db.Column(db.Integer) #user makes request
+    user_proposed_from = db.Column(db.Integer) # user make proposal to user makes request
+
 
     @staticmethod
-    def get_proposals_by_user_id(user_id):
+    def check_if_proposal_user_exist(data):
+        """Check if user who made a proposal already made it."""
+        try:
+            user_proposal = Proposal.query.filter(
+                Proposal.request_id == data.get("request_id"),
+                Proposal.user_proposed_from == data.get("user_proposed_from")
+            ).first()
+        except Exception as e:
+            raise e
+        if user_proposal:
+            return True
+
+    @staticmethod
+    def get_proposals_by_id(currenty_user):
         try:
             proposals =\
                 Proposal.query.filter(Proposal.user_proposed_to==\
-                    user_id.get("id", None)
-            )
+                    currenty_user.id
+            ).all()
         except Exception as e:
             return None
         return proposals
@@ -195,7 +204,7 @@ class Proposal(db.Model, BaseModel):
             return False
         try:
             update_proposal = Proposal.query.filter_by(
-                data_update.get('id', None)
+                id=data_update.get('id', None)
             ).update(data_update)
         except Exception as e:
             raise e
@@ -215,3 +224,5 @@ class MealDate(db.Model, BaseModel):
     restaurant_picture = db.Column(db.String(100), nullable=False)
     meal_time = db.Column(db.DateTime(), nullable=False)
 
+
+    

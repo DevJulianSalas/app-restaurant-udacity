@@ -10,7 +10,10 @@ from flask_jwt import jwt_required, current_identity
 # --*-- own packages --*--
 from ..helper import API_INDEX
 from ..models import User
-from ..serializer_marsh import user_result_schema, users_result_schema, update_user_result_schema
+from ..serializer_marsh import ( 
+    user_result_schema, users_result_schema, update_user_result_schema,
+    get_only_user_schema
+    )
 from ..models import User
 from .. import db
 
@@ -111,7 +114,7 @@ class ApiUserResource(Resource):
                 "message": "Opps User could not be found"
             }
             return make_response(jsonify(response), 400)
-        response, error = user_result_schema.dump(user)
+        response, error = get_only_user_schema.dump(user)
         return make_response(jsonify(response))
         
 
