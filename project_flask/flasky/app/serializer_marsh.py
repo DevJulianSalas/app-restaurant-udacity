@@ -164,7 +164,27 @@ class MealDateSchema(Schema):
     )
 
     
+class MealDateGetSchema(Schema):
+    id = fields.Int(dump_only=True)
+    user_id_request = fields.Int(required = True)
+    user_id_proposal = fields.Int(required = True)
+    restaurant_name = fields.Str(required = True)
+    restaurant_address = fields.Str(required = True)
+    restaurant_picture = fields.Str(required = True)
+    meal_time = fields.DateTime(required = True)
+
     
+class UpdateMealDateGetSchema(Schema):
+    id = fields.Int(required=True, error_messages= {
+        "required": "Id is necesary to update request"
+        }
+    )
+    user_id_request = fields.Int(validate=must_not_be_blank)
+    user_id_proposal = fields.Int(validate=must_not_be_blank)
+    restaurant_name = fields.Str(validate=must_not_be_blank)
+    restaurant_address = fields.Str(validate=must_not_be_blank)
+    restaurant_picture = fields.Str(validate=must_not_be_blank)
+    meal_time = fields.DateTime(validate=must_not_be_blank)
 
 
 
@@ -192,3 +212,6 @@ proposal_update_schema = UpdateProposalSchema()
 
 #mealdate
 meal_date_schema = MealDateSchema()
+meal_data_get_schema = MealDateGetSchema(many=True)
+meal_data_get_specific = MealDateGetSchema()
+update_meal_data = UpdateMealDateGetSchema()

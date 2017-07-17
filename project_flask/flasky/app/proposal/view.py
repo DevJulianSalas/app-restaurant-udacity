@@ -116,7 +116,7 @@ class ApiProposalResource(Resource):
                 "message": "There is not proposal with that id"
             }
             return make_response(jsonify(response))
-        data, error = proposal_schema.dump(proporsal)
+        data, error = proposal_schema.dump(proposal)
         if error:
             response = {
                 "message": "There was a problem, try again"

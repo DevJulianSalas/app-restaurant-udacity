@@ -3,6 +3,7 @@ from . import db
 from flask_sqlalchemy import declarative_base
 import os
 from datetime import datetime, timedelta
+from sqlalchemy import or_
 
 
 Base = declarative_base()
@@ -218,11 +219,72 @@ class Proposal(db.Model, BaseModel):
 class MealDate(db.Model, BaseModel):
     __tablename__ = 'mealdate'
     user_id_request = db.Column(db.Integer)
-    users_ids = db.Column(db.Integer)
+    user_id_proposal = db.Column(db.Integer)
     restaurant_name = db.Column(db.String(100), nullable=False)
     restaurant_address = db.Column(db.String(100), nullable=False)
     restaurant_picture = db.Column(db.String(100), nullable=False)
     meal_time = db.Column(db.DateTime(), nullable=False)
 
+    @staticmethod
+    def insert_meal_date(meal_date_info, current_id, 
+        user_id_proposals, request_info):
+        if len(user_id_proposals) > 0:
+            try:
+                for user_proposal in user_id_proposals:
+                    meal_date = MealDate(
+                        user_id_request = current_id.id,
+                        user_id_proposal = user_proposal.id,
+                        restaurant_name = meal_date_info.get("name", None),
+                        restaurant_address = meal_date_info.get("address", None),
+                        restaurant_picture = meal_date_info.get("image", None),
+                        meal_time = request_info.meal_time
+                    )
+                    db.session.add(meal_date)
+            except Exception as e:
+                raise e
+            db.session.commit()
+        return meal_date
+
+    @staticmethod
+    def update_meal_date(current_id_data, data_update):
+        try:
+             meal_date = MealDate.query.filter(
+                MealDate.user_id_request == current_id_data.id\
+                or MealDate.user_id_proposal == current_id_data.id
+            )
+        except Exception as e:
+            raise e
+        if meal_date is None:
+            return False
+        try:
+            update_meal_date = MealDate.query.filter_by(
+                id=data_update.get('id', None)
+            ).update(data_update)
+        except Exception as e:
+            raise e
+        if update_meal_date:
+            db.session.commit()
+            return update_meal_date
+
+    @staticmethod
+    def get_specific_meal_date(id_meal_date, current_identity):
+        try:
+            specific_meal_date = MealDate.query.filter(
+                MealDate.id == id_meal_date.get("id", None))\
+                .filter(
+                    or_(MealDate.user_id_request  == current_identity.id,
+                        MealDate.user_id_proposal == current_identity.id
+                       )
+            ).first()
+        except Exception as e:
+            raise e
+        return specific_meal_date
+        
+
+        
+            
+            
 
     
+    
+
