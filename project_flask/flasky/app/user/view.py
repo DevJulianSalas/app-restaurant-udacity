@@ -5,6 +5,7 @@ from . import user_blueprint
 from flask_restful import reqparse, abort, Api, Resource
 from flask import request, jsonify, redirect, make_response
 from flask_jwt import jwt_required, current_identity
+from sqlalchemy.exc import SQLAlchemyError
 
 
 # --*-- own packages --*--
@@ -12,7 +13,7 @@ from ..helper import API_INDEX
 from ..models import User
 from ..serializer_marsh import ( 
     user_result_schema, users_result_schema, update_user_result_schema,
-    get_only_user_schema
+    get_only_user_schema, delete_user_result_schema
     )
 from ..models import User
 from .. import db
@@ -24,24 +25,26 @@ api = Api(user_blueprint)
 class ApiUsersResource(Resource):
     """
     Manage the path resources to User
-    methods:
-        get  -> return all users 
-        post -> create an user 
-        put  -> update an user
-        delete -> delete an user
     Note:
         the get, put, delete methods ask them jwt token to 
         authorizate access
-    
     """
-    
     @jwt_required()
     def get(self):
-        """Return profile information about all users system"""
-        users = User.query.all()
-        result, error = users_result_schema.dump(users)
-        if error:
+        """
+        Return profile information about all users system
+        No params
+        """
+        list_users = None
+        try:
+            list_users = User.query.all()
+        except SQLAlchemyError as error:
             print(error)
+            db.session.rollback()
+        result, error = users_result_schema.dump(list_users)
+        if error:
+            response = {"message": "There was a problem, try again"}
+            make_response(jsonify(response))
         return make_response(jsonify(result))
 
     
@@ -91,6 +94,10 @@ class ApiUsersResource(Resource):
             "update": True
         }
         return make_response(jsonify(response))
+    @jwt_required()
+    def delete(self):
+        """Delete user account with token identity"""
+        
             
         
 

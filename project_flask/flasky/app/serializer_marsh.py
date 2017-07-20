@@ -8,15 +8,6 @@ from .models import User, Request
 from . import ma, bcrypt
 import os
 
-
-
-class ValidateTokenSchema(ma.Schema):
-    pass
-
-
-
-
-
 class UserSchema(ma.Schema):
     # class Meta:
     #     model = User
@@ -70,12 +61,6 @@ class UpdateUserSchema(ma.Schema):
         else:
             return data
     
-
-
-
-
-
-
 class RequestsSchema(Schema):
 
     id = fields.Int(dump_only=True)
@@ -188,14 +173,13 @@ class UpdateMealDateGetSchema(Schema):
 
 
 
-
-
-
 #User    
 user_result_schema = UserSchema()
 get_only_user_schema = UserSchema(only=("name", "email"))
 users_result_schema = UserResultSchema(only=('name', 'email'),many=True)
 update_user_result_schema = UpdateUserSchema()
+delete_user_result_schema = UserSchema(only=("id"))
+
 
 
 #Request

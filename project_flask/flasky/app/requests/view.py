@@ -33,7 +33,7 @@ class ApiRequestsResource(Resource):
     
     def get(self):
         """get all register from request"""
-        requests = Request.get_all_data(current_identity.id)
+        requests = Request.get_all_data(current_identity)
         data, errors = requests_schema.dump(requests)
         if errors:
             print(errors)
@@ -80,7 +80,7 @@ class ApiRequestsResource(Resource):
         data, errors = request_update_schema.load(json_data)
         if errors:
             return make_response(jsonify({'message': errors}), 422)
-        update_request = Request.update_request(current_identity.id, data)
+        update_request = Request.update_request(current_identity, data)
         if not update_request:
             return make_response(jsonify({'message': 'Failed update request, check out params'}), 400)
         response = {

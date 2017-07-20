@@ -42,7 +42,6 @@ class ApiProposalsResource(Resource):
         json_data = request.get_json()
         if not json_data:
             return make_response(jsonify({'message': 'No input data provided'}), 400)
-        print(json_data)
         data, errors = proposal_schema.load(json_data)
         if errors:
             return make_response(jsonify({'message': errors}), 422)

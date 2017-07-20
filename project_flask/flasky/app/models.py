@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
 
-from . import db
-from flask_sqlalchemy import declarative_base
+# --*-- built-in packages --*--
 import os
 from datetime import datetime, timedelta
+
+# --*-- own packages --*--
+from . import db
+
+# --*-- Installed packages --*--
+from flask_sqlalchemy import declarative_base
 from sqlalchemy import or_
+from sqlalchemy.exc import SQLAlchemyError
 
 
 Base = declarative_base()
@@ -12,27 +19,23 @@ class BaseModel(Base):
     """This class content all methods commons to use in differents models"""
     __abstract__  = True
     id = db.Column(db.Integer, primary_key=True)
-    
+    # create_on = db.Column(DateTime(),)
+    # update_on = db.Column(DateTime(),)
 
     def save(self):
         db.session.add(self)
         db.session.commit()
-
     
-    
-
-
-
-
 class User(db.Model, BaseModel):
     __tablename__ = 'user'
-    name = db.Column(db.String(120))
+    first_name = db.Column(db.String(120))
+    last_name = db.Column(db.String(120))
     email = db.Column(db.String(120))
+    user_name = db.Column(db.String(120), unique = True)
     password_hash = db.Column(db.String(120))
     active = db.Column(db.Boolean, default=False)
     age = db.Column(db.Integer)
-    token = db.Column(db.Text)
-
+    
     #Relathionship
     user = db.relationship('Request', backref="user", lazy='dynamic')
 
@@ -67,37 +70,57 @@ class User(db.Model, BaseModel):
         except jwt.InvalidTokenError:
             return 'Invalid token. Please log in again.'
     
+    
     @staticmethod
     def verify_if_user_exist(user_name):
         """
-        return true if user exist
-        params: user_name str username
-        return Bool
+        Search by user_name exist.
+            params: user_name str username
+            return object found in mapper
         """
-        result_query_user = User.query.filter_by(name=user_name).first()
-        if result_query_user:
-            return True
+        is_user = None
+        try:
+            is_user = User.query.filter_by(
+                user_name=user_name).first()
+        except SQLAlchemyError as error:
+            print(error) #here make a loggin data to track!
+            db.session.rollback()
+            
+        else:
+            return is_user
     
     @staticmethod
     def update_instance_of_user(id, data):
         """
-        return instance of user updated if there is one user.
-        params: data => something value to search in columns to return data
+        update user according to data passed
+            params: data => is a dict of data to update
+            return instance of user updated if there is one user 
+            or None if there is no user.
         """
+        user_update = None
         try:
             user_update = User.query.filter_by(id=id).update(data)
-        except Exception as e:
-            print(e)
-            return False
-        if user_update:
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
             db.session.commit()
             return user_update
+        
+    # @staticmethod
+    # def delete_user(identify):
+    #     result_query = None
+    #     try:
+    #         result_query = User.query.get(identify.id)
+    #     except Exception as e:
+    #         return result_query
+    #     return result_query
+        
         
 class Request(db.Model, BaseModel):
     __tablename__ = 'request'
     #Foreingkey
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    
     #Fields
     meal_type = db.Column(db.String(100), nullable=False)
     location_request = db.Column(db.String(100), nullable=False)
@@ -105,48 +128,64 @@ class Request(db.Model, BaseModel):
     meal_time = db.Column(db.DateTime(), nullable=False)
     filled = db.Column(db.Boolean, unique=False, default=False)
     filled_limit = db.Column(db.Integer, default=0)
-    
     #Relathionship
     proposal = db.relationship('Proposal', backref="proposal", lazy='dynamic')
     
-
-
     @staticmethod
     def get_all_data(user_id):
-        """Return all request from Request except the requests of own user_id"""
+        """
+        Search by all requests distinct of themselves 
+            params: user_id is a identify user with id 
+            Return all requests except the requests of user_id
+        """
+        list_requests = list()
         try:
-            list_request = list()
-            for data in Request.query.filter(Request.user_id != user_id):
+            for data in Request.query.filter(Request.user_id != user_id.id):
                 list_request.append(data)
-            return list_request
-        except Exception as error:
+        except SQLAlchemyError as error:
             print(error)
             db.session.rollback()
+        else:
+            return list_requests
 
     @staticmethod
     def get_specifyc_request(id_request):
+        """
+        Get specific request with id request
+            params: id of request
+            return request instance-
+        """
+        result_request = None
         try:
             result_request = Request.query.get(id_request)
-            return result_request
-        except Exception as error:
+        except SQLAlchemyError as error:
             print(error)
             db.session.rollback()
+        else:
+            return result_request
 
     @staticmethod
     def update_request(user_id, data_update):
+        """
+        Update request, only user who made request, can update request
+            params: user_id is a indentify to know if user exist
+                    data_update is a dict to update information about
+                        request
+            return flag if or not update request
+        """
+        request_update = False
         try:
             request_update = Request.query.filter(
-                Request.user_id == user_id, 
-                Request.id == data_update.get("id", None)
-                ).update(data_update)
-        except Exception as e:
-            return False
-        if request_update:
+                                Request.user_id == user_id.id, 
+                                Request.id == data_update.get("id", None)
+                                ).update(data_update)
+        except SQLAlchemyError as error:
+            print(e)
+            db.session.rollback()
+        else:
             db.session.commit()
             return request_update
-        else:
-            return False
-
+                        
 class Proposal(db.Model, BaseModel):
     __tablename__ = 'proposal'
     
@@ -156,66 +195,94 @@ class Proposal(db.Model, BaseModel):
     user_proposed_to = db.Column(db.Integer) #user makes request
     user_proposed_from = db.Column(db.Integer) # user make proposal to user makes request
 
-
     @staticmethod
     def check_if_proposal_user_exist(data):
-        """Check if user who made a proposal already made it."""
+        """
+        Check if an user already made proposal with that request_id or.
+            params: data is a dict with request_id and user_proposed_from
+            return None if user not is found or 
+        
+        """
+        user_proposal = None
         try:
             user_proposal = Proposal.query.filter(
                 Proposal.request_id == data.get("request_id"),
                 Proposal.user_proposed_from == data.get("user_proposed_from")
-            ).first()
-        except Exception as e:
-            raise e
-        if user_proposal:
-            return True
-
+            ).count()
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
+            return user_proposal
+    
     @staticmethod
     def get_proposals_by_id(currenty_user):
+        """
+        Get proposals according to id.
+            params: currenty_user is an identification user.
+            return: a list of proposal instances.
+
+        """
+        list_proposals = list()
         try:
-            proposals =\
-                Proposal.query.filter(Proposal.user_proposed_to==\
-                    currenty_user.id
-            ).all()
-        except Exception as e:
-            return None
-        return proposals
+            for proposal in Proposal.query.filter(Proposal.user_proposed_to==\
+                                                  currenty_user.id):
+                list_proposals.append(proposal)
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
+            return list_proposals
 
     @staticmethod
     def get_specific_proposal(id_proposal, info_user):
+        """
+        get specific proposal if user and id proposal exist.
+            params: id_proposal is an id of proposal registry.
+                    info_user is an id of user who want get proposal
+            return: instance of proposal.
+        """
+        proposal = None
         try:
             proposal = Proposal.query.filter(
                 Proposal.id == id_proposal,
                 Proposal.user_proposed_from == info.get("id", None) or\
                 Proposal.user_proposed_to == info_user.get("id")
             )
-        except Exception as e:
-            raise e
-        return proposal
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
+            return proposal
 
     @staticmethod
-    def update_proposal(current_id_data, data_update):
+    def update_proposal(current_user, data_update):
+        """
+        update information of a proposal if current user exist 
+        in proposals the request.
+            params: current_user
+
+        """
         try:
             exist_user_proposal = Proposal.query.filter(
-                Proposal.user_proposed_from == current_id_data.id
+                Proposal.user_proposed_from == current_user.id
             )
-        except Exception as e:
-            raise e
-        if exist_user_proposal is None:
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
             return False
         try:
             update_proposal = Proposal.query.filter_by(
-                id=data_update.get('id', None)
-            ).update(data_update)
-        except Exception as e:
-            raise e
-        if update_proposal:
-            db.session.commit()
-            return update_proposal
-
-        
-    
-    
+                id=data_update.get('id', None)).update(data_update)
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
+            if update_proposal:
+                db.session.commit()
+                return update_proposal
+            
 class MealDate(db.Model, BaseModel):
     __tablename__ = 'mealdate'
     user_id_request = db.Column(db.Integer)
@@ -228,7 +295,16 @@ class MealDate(db.Model, BaseModel):
     @staticmethod
     def insert_meal_date(meal_date_info, current_id, 
         user_id_proposals, request_info):
+        """
+        Insert meald date of 1 or mor users proposal.
+            params: meald_date_info str 
+                    current_id int is id of current user
+                    request_info is a date of a made request
+                    user_id_proposals, update info for all users
+            return: true if update or false if not.
+        """
         if len(user_id_proposals) > 0:
+            meal_date = None
             try:
                 for user_proposal in user_id_proposals:
                     meal_date = MealDate(
@@ -240,45 +316,66 @@ class MealDate(db.Model, BaseModel):
                         meal_time = request_info.meal_time
                     )
                     db.session.add(meal_date)
-            except Exception as e:
-                raise e
-            db.session.commit()
-        return meal_date
+            except SQLAlchemyError as error:
+                print(errror)
+                db.session.rollback()
+            else:
+                db.session.commit()
+                return meal_date
 
     @staticmethod
-    def update_meal_date(current_id_data, data_update):
+    def update_meal_date(current_data, data_update):
+        """
+        Update meal date if current id exist.
+            params: current_data is a current object user 
+                    data_update is a dict with information
+                        about meal to update.
+            return: 
+        """
+        is_meal_date = None
         try:
-             meal_date = MealDate.query.filter(
-                MealDate.user_id_request == current_id_data.id\
-                or MealDate.user_id_proposal == current_id_data.id
-            )
-        except Exception as e:
-            raise e
-        if meal_date is None:
-            return False
+             is_meal_date = MealDate.query.filter(
+                        MealDate.user_id_request == current_data.id\
+                        or MealDate.user_id_proposal == current_data.id
+                        )
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
+            if not is_meal_date:
+                return False
         try:
             update_meal_date = MealDate.query.filter_by(
-                id=data_update.get('id', None)
-            ).update(data_update)
-        except Exception as e:
-            raise e
-        if update_meal_date:
-            db.session.commit()
-            return update_meal_date
+                    id = data_update.get('id', None)).update(data_update)
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
+            if update_meal_date:
+                db.session.commit()
+                return update_meal_date
 
     @staticmethod
     def get_specific_meal_date(id_meal_date, current_identity):
+        """
+        get specific meal date for current id user
+            params: id_meal_date int is an id of meal date to search
+                    current_identity, is a current object user
+        """
+        specific_meal_date = None
         try:
             specific_meal_date = MealDate.query.filter(
-                MealDate.id == id_meal_date.get("id", None))\
-                .filter(
-                    or_(MealDate.user_id_request  == current_identity.id,
-                        MealDate.user_id_proposal == current_identity.id
-                       )
-            ).first()
-        except Exception as e:
-            raise e
-        return specific_meal_date
+                    MealDate.id == id_meal_date.get("id", None))\
+                    .filter(
+                            or_(MealDate.user_id_request  == current_identity.id,
+                            MealDate.user_id_proposal == current_identity.id
+                            )
+                    ).first()
+        except SQLAlchemyError as error:
+            print(error)
+            db.session.rollback()
+        else:
+            return specific_meal_date
         
 
         

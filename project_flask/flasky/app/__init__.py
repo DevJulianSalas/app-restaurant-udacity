@@ -33,6 +33,7 @@ def create_app(config_environment):
     app = Flask(__name__)
     app.config.from_object(config[config_environment])
     config[config_environment].init_app(app)
+    
     #Register plugins to app init
     db.init_app(app)
     ma.init_app(app)

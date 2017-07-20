@@ -95,9 +95,6 @@ class ApiMealDataResource(Resource):
         meal_date = MealDate.get_specific_meal_date(
             json_data, current_identity
         )
-        print("===========================")
-        print(meal_date)
-        print("===========================")
         if not meal_date:
             response = {
                 "message": "There is not proposal with that id"
