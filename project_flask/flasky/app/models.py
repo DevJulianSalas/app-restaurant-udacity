@@ -85,9 +85,13 @@ class User(db.Model, BaseModel):
         except SQLAlchemyError as error:
             print(error) #here make a loggin data to track!
             db.session.rollback()
-            
+            return None
         else:
-            return is_user
+            if is_user:
+                return is_user
+            else:
+                return False
+            
     
     @staticmethod
     def update_instance_of_user(id, data):

@@ -14,7 +14,7 @@ api = Api(auth_blueprint)
 
 
 def authenticate(username, password):
-    user = User.query.filter_by(name=username).first()
+    user = User.query.filter_by(user_name=username).first()
     if user and bcrypt.check_password_hash(user.password_hash, password):
         return user
 

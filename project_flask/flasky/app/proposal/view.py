@@ -18,11 +18,7 @@ from .. import db
 
 api = Api(proposal_to_request)
 
-
-
-
 class ApiProposalsResource(Resource):
-
     @jwt_required()
     def get(self):
         proposal = Proposal.get_proposals_by_id(

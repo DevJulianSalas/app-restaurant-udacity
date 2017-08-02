@@ -1,0 +1,15 @@
+version: '3'
+services:
+  restaurant_backend:
+    build: ./project_flask
+    depends_on:
+      - restaurant_db
+    expose:
+      - "9000"
+  restaurant_db:
+    image: postgres:9.5.6
+    expose:
+      - "5432"
+    
+  
+    

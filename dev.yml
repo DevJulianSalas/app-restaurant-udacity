@@ -1,9 +1,8 @@
-version: "2.0"
+version: "3"
 services:
-  backend:
-    build:
-      context: ./project_flask
-    container_name: "flask_restaurant"
+  restaurant_backend:
+    image: backend_restaurant:develop
+    container_name: "FlaskRestauranDevelop"
     env_file: .env
     ports:
       - "9000:9000"
@@ -12,34 +11,16 @@ services:
     command: /bin/bash -c "
               sleep 5;  
               python3 manage.py runserver -h 0.0.0.0 -p 9000 -r -d"
-    links: 
-      - db
-    networks:
-      app_net:
-        ipv4_address: '$FLASK_IP'
-
-  db:
-    image: postgres:9.5.6
-    container_name: "db_restaurant"
+  
+  restaurant_db:
+    container_name: "PostgresDevelop"
     env_file: .env
+    volumes:
+      - data:/var/lib/postgresql/data
     ports: 
       - "5432:5432"
-    expose:
-      - "5432"
-    volumes_from:
-      - pg_data
-    networks:
-      app_net:
-        ipv4_address: '$POSTGRES_IP'
     
-  pg_data:
-    build:
-      context: ./pg_data
-    container_name: persistence_app_restaurant
+volumes:
+  data:
+    driver: local
 
-networks:
-  app_net:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.5.0/24

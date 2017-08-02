@@ -1,26 +1,32 @@
-from marshmallow import (
-    Schema, fields, ValidationError, pre_load, post_load,
-    validates
+# -*- coding: utf-8 -*-
 
-    )
-from .helper import must_not_be_blank
-from .models import User, Request
-from . import ma, bcrypt
+# --*-- built-in packages --*--
 import os
 
-class UserSchema(ma.Schema):
-    # class Meta:
-    #     model = User
-        # fields = ('id', 'name','email','password_hash','age')
-    
+# --*-- installed packages --*--
+from marshmallow import Schema, fields, ValidationError,\
+                        pre_load, post_load,validates
+from . import ma, bcrypt
+# --*-- own packages --*--
+from .helper import must_not_be_blank
+from .models import User, Request
+
+
+class UserSchema(Schema):
     id = fields.Int(dump_only=True)
-    name = fields.Str(required=True, validate=must_not_be_blank)
+    first_name = fields.String(required=True, validate=must_not_be_blank)
+    last_name = fields.Str(required=True, validate=must_not_be_blank)
+    user_name = fields.Str(required=True, validate=must_not_be_blank)
     email = fields.Email(required=True, validate=must_not_be_blank)
     password_hash = fields.Str(required=True, validate=must_not_be_blank)
     age = fields.Int(required=True, validate=must_not_be_blank)
 
+    def set_update_field(self):
+        print(self.id)
+        return self.id
+
     def format_name(self, user):
-        return "{}, {}".format(user.name, user.email)
+        return "{}, {}".format(user.first_name, user.email)
     
     @pre_load
     def generate_bycrip_pass(self, data):
@@ -32,17 +38,9 @@ class UserSchema(ma.Schema):
             return data
         else:
             return data
+
+    
             
-
-
-class UserResultSchema(ma.Schema):
-    id = fields.Int(dump_only=True)
-    name = fields.Str(required=True, validate=must_not_be_blank)
-    email = fields.Email(required=True, validate=must_not_be_blank)
-    age = fields.Int(required=True, validate=must_not_be_blank)
-
-
-
 class UpdateUserSchema(ma.Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(validate=must_not_be_blank)
@@ -60,6 +58,7 @@ class UpdateUserSchema(ma.Schema):
             return data
         else:
             return data
+    
     
 class RequestsSchema(Schema):
 
@@ -148,7 +147,6 @@ class MealDateSchema(Schema):
         validate=must_not_be_blank
     )
 
-    
 class MealDateGetSchema(Schema):
     id = fields.Int(dump_only=True)
     user_id_request = fields.Int(required = True)
@@ -158,7 +156,6 @@ class MealDateGetSchema(Schema):
     restaurant_picture = fields.Str(required = True)
     meal_time = fields.DateTime(required = True)
 
-    
 class UpdateMealDateGetSchema(Schema):
     id = fields.Int(required=True, error_messages= {
         "required": "Id is necesary to update request"
@@ -175,11 +172,7 @@ class UpdateMealDateGetSchema(Schema):
 
 #User    
 user_result_schema = UserSchema()
-get_only_user_schema = UserSchema(only=("name", "email"))
-users_result_schema = UserResultSchema(only=('name', 'email'),many=True)
 update_user_result_schema = UpdateUserSchema()
-delete_user_result_schema = UserSchema(only=("id"))
-
 
 
 #Request

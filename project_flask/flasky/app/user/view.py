@@ -11,10 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 # --*-- own packages --*--
 from ..helper import API_INDEX
 from ..models import User
-from ..serializer_marsh import ( 
-    user_result_schema, users_result_schema, update_user_result_schema,
-    get_only_user_schema, delete_user_result_schema
-    )
+from ..serializer_marsh import user_result_schema, update_user_result_schema
 from ..models import User
 from .. import db
 
@@ -41,7 +38,10 @@ class ApiUsersResource(Resource):
         except SQLAlchemyError as error:
             print(error)
             db.session.rollback()
-        result, error = users_result_schema.dump(list_users)
+        user_result_schema.only = ('user_name','email', 
+              'age', 'first_name', 'last_name'
+        )
+        result, error = user_result_schema.dump(list_users, many=True)
         if error:
             response = {"message": "There was a problem, try again"}
             make_response(jsonify(response))
@@ -56,15 +56,23 @@ class ApiUsersResource(Resource):
         data, errors = user_result_schema.load(json_data)
         if errors:
             return make_response(jsonify({'message': errors}), 422)
-        verify_user_exist = User.verify_if_user_exist(data.get("name",None))
+        verify_user_exist = User.verify_if_user_exist(data.get("user_name",None))
         if verify_user_exist:
             response = {
                 'message': 'username already exists',
                 "created": False
             }
             return make_response(jsonify(response))
+        if verify_user_exist is None:
+            response = {
+                'message': 'Ops There was a problema, try again',
+                "created": False
+            }
+            return make_response(jsonify(response))
         user = User(
-            name=data.get("name",None), 
+            first_name = data.get("first_name",None),
+            last_name = data.get("last_name",None),
+            user_name = data.get("user_name",None),
             email=data.get("email",None),
             password_hash=data.get("password_hash",None), 
             age=data.get("age",None)
@@ -97,6 +105,7 @@ class ApiUsersResource(Resource):
     @jwt_required()
     def delete(self):
         """Delete user account with token identity"""
+        pass
         
             
         
@@ -121,7 +130,8 @@ class ApiUserResource(Resource):
                 "message": "Opps User could not be found"
             }
             return make_response(jsonify(response), 400)
-        response, error = get_only_user_schema.dump(user)
+        user_result_schema.only = ("name", "email")
+        response, error = user_result_schema.dump(user)
         return make_response(jsonify(response))
         
 

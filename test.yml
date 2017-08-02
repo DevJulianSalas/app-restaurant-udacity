@@ -13,10 +13,3 @@ services:
     networks:
       app_net:
         ipv4_address: '$FLASK_IP_TEST'
-
-networks:
-  app_net:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.5.0/24
